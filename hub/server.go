@@ -14,7 +14,7 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 )
 
-const defaultHubURL = "/.well-known/mercure"
+const defaultHubURL = "/hub"
 
 // Serve starts the HTTP server
 func (h *Hub) Serve() {

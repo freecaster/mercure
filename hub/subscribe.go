@@ -80,6 +80,18 @@ func (h *Hub) initSubscription(w http.ResponseWriter, r *http.Request) (*Subscri
 	}
 	fields["subscriber_topics"] = topics
 
+	// Make sure the subscriber has a valid claim to this topic
+	authorizedAlltargets, authorizedTargets := authorizedTargets(claims, false)
+	for _, t := range topics {
+		if !authorizedAlltargets {
+			_, ok := authorizedTargets[t]
+			if !ok {
+				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+				return nil, nil, false
+			}
+		}
+	}
+
 	var rawTopics = make([]string, 0, len(topics))
 	var templateTopics = make([]*uritemplate.Template, 0, len(topics))
 	for _, topic := range topics {
@@ -90,7 +102,6 @@ func (h *Hub) initSubscription(w http.ResponseWriter, r *http.Request) (*Subscri
 		}
 	}
 
-	authorizedAlltargets, authorizedTargets := authorizedTargets(claims, false)
 	subscriber := NewSubscriber(authorizedAlltargets, authorizedTargets, topics, rawTopics, templateTopics, retrieveLastEventID(r))
 
 	pipe, err := h.transport.CreatePipe(subscriber.LastEventID)

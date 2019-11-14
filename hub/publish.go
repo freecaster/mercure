@@ -43,9 +43,10 @@ func (h *Hub) PublishHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Make sure the authorized publish claims line with the topic given (NOT THE TARGET GIVEN).
 	authorizedAlltargets, authorizedTargets := authorizedTargets(claims, true)
-	targets := make(map[string]struct{}, len(r.PostForm["target"]))
-	for _, t := range r.PostForm["target"] {
+	targets := make(map[string]struct{}, len(topics))
+	for _, t := range topics {
 		if !authorizedAlltargets {
 			_, ok := authorizedTargets[t]
 			if !ok {
