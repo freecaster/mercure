@@ -102,7 +102,9 @@ func (h *Hub) initSubscription(w http.ResponseWriter, r *http.Request) (*Subscri
 		}
 	}
 
-	subscriber := NewSubscriber(authorizedAlltargets, authorizedTargets, topics, rawTopics, templateTopics, retrieveLastEventID(r))
+	lastID := retrieveLastEventID(r)
+	fmt.Println("SUBSCRIBE WITH EVENT ID :" + lastID)
+	subscriber := NewSubscriber(authorizedAlltargets, authorizedTargets, topics, rawTopics, templateTopics, lastID)
 
 	pipe, err := h.transport.CreatePipe(subscriber.LastEventID)
 	if err != nil {
@@ -172,7 +174,11 @@ func retrieveLastEventID(r *http.Request) string {
 		return id
 	}
 
-	return r.URL.Query().Get("Last-Event-ID")
+	id := r.URL.Query().Get("Last-Event-ID")
+	if id == "" {
+		id = r.URL.Query().Get("lastEventId")
+	}
+	return id
 }
 
 // publish sends the update to the client, if authorized
